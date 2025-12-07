@@ -1,10 +1,15 @@
 const std = @import("std");
-const advent_of_zig = @import("advent_of_zig");
+const day01_year25 = @import("solvers/01_25.zig");
+const file = @import("helpers/file.zig");
 
 const Date = struct {
     year: [:0]const u8, 
     day: [:0]const u8,
 };
+
+fn equal_date(a: Date, b: Date) bool {
+    return std.mem.eql(u8, a.year, b.year) and std.mem.eql(u8, a.day, b.day);
+}
 
 fn parse_args() !Date {
     const allocator = std.heap.page_allocator;
@@ -13,39 +18,53 @@ fn parse_args() !Date {
 
     _ = args.next(); // skip executable name
 
-    const year = args.next() orelse return error.MissingYear;
     const day  = args.next() orelse return error.MissingDay;
+    const year = args.next() orelse return error.MissingYear;
 
     return .{ .year = year, .day = day };
 }
 
+const Solver = struct {
+    date: Date,
+    solve: *const fn ([]u8) void,
+};
+
+
+pub const solvers = [_]Solver{
+    .{ .date = .{ .day = "01", .year = "2025"}, .solve = day01_year25.solve },
+};
+
 pub fn main() !void {
     const date = parse_args() catch |err| {
         switch (err) {
-            error.MissingYear => std.debug.print("Missing year argument\n", .{}),
-            error.MissingDay  => std.debug.print("Missing day argument\n", .{}),
+            error.MissingYear => std.debug.print("Missing year argument. e.g, 2025 \n", .{}),
+            error.MissingDay  => std.debug.print("Missing day argument. e.g, 01 \n", .{}),
         }
-        return; // exit gracefully
+        return;
     };
 
-    std.debug.print("Year: {s}, Day: {s}\n", .{ date.year, date.day });
+    if (findSolver(date)) |solver| {
+        const input_file = getInputPath(date.year, date.day);
+        const input = file.readFile(input_file) catch |err| {
+            std.debug.print("Failed to read input file: {s} {}\n", .{input_file, err});
+            return;
+        };
+        defer std.heap.page_allocator.free(input);
+        solver(input);
+    } else {
+        std.debug.print("No solver\n", .{});
+    }
+
 }
 
-test "simple test" {
-    const gpa = std.testing.allocator;
-    var list: std.ArrayList(i32) = .empty;
-    defer list.deinit(gpa); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(gpa, 42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+fn getInputPath(year: [:0]const u8, day: [:0]const u8) []const u8 {
+    return std.fmt.allocPrint(std.heap.page_allocator, "inputs/day{s}_year{s}.txt", .{day, year}) catch unreachable;
 }
 
-test "fuzz example" {
-    const Context = struct {
-        fn testOne(context: @This(), input: []const u8) anyerror!void {
-            _ = context;
-            // Try passing `--fuzz` to `zig build test` and see if it manages to fail this test case!
-            try std.testing.expect(!std.mem.eql(u8, "canyoufindme", input));
-        }
-    };
-    try std.testing.fuzz(Context{}, Context.testOne, .{});
+fn findSolver(date: Date) ?*const fn([]u8) void {
+    inline for (solvers) |s| {
+        if (equal_date(s.date, date))
+            return s.solve;
+    }
+    return null;
 }
