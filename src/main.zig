@@ -1,5 +1,6 @@
 const std = @import("std");
 const day01_year25 = @import("solvers/01_25.zig");
+const day02_year25 = @import("solvers/02_25.zig");
 const file = @import("helpers/file.zig");
 
 const Date = struct {
@@ -32,6 +33,7 @@ const Solver = struct {
 
 pub const solvers = [_]Solver{
     .{ .date = .{ .day = "01", .year = "2025"}, .solve = day01_year25.solve },
+    .{ .date = .{ .day = "02", .year = "2025"}, .solve = day02_year25.solve },
 };
 
 pub fn main() !void {
