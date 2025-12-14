@@ -3,6 +3,7 @@ const day01_year25 = @import("solvers/01_25.zig");
 const day02_year25 = @import("solvers/02_25.zig");
 const day03_year25 = @import("solvers/03_25.zig");
 const day04_year25 = @import("solvers/04_25.zig");
+const day05_year25 = @import("solvers/05_25.zig");
 const file = @import("helpers/file.zig");
 
 const Date = struct {
@@ -38,6 +39,7 @@ pub const solvers = [_]Solver{
     .{ .date = .{ .day = "02", .year = "2025"}, .solve = day02_year25.solve },
     .{ .date = .{ .day = "03", .year = "2025"}, .solve = day03_year25.solve },
     .{ .date = .{ .day = "04", .year = "2025"}, .solve = day04_year25.solve },
+    .{ .date = .{ .day = "05", .year = "2025"}, .solve = day05_year25.solve },
 };
 
 pub fn main() !void {
